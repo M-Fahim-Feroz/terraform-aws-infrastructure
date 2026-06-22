@@ -1,0 +1,12 @@
+# Example values for bootstrap
+aws_region        = "us-east-1"
+project_name      = "my-aws-infra"
+environment       = "bootstrap"
+state_bucket_name = "my-unique-tf-state-bucket-12345"
+lock_table_name   = "my-unique-tf-state-lock"
+
+common_tags = {
+  Project     = "my-aws-infra"
+  Environment = "bootstrap"
+  ManagedBy   = "Terraform"
+}

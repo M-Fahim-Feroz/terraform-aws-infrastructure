@@ -1,0 +1,27 @@
+# Safe example values for the Dev environment
+aws_region           = "us-east-1"
+project_name         = "terraform-aws-infrastructure"
+environment          = "dev"
+vpc_cidr             = "10.0.0.0/16"
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24"]
+availability_zones   = ["us-east-1a", "us-east-1b"]
+instance_type        = "t3.micro"
+
+db_name                    = "appdb"
+db_username                = "appuser"
+db_password                = "REPLACE_WITH_STRONG_PASSWORD"
+db_instance_class          = "db.t3.micro"
+db_allocated_storage       = 20
+db_engine_version          = "16"
+db_backup_retention_period = 1
+db_multi_az                = false
+db_deletion_protection     = false
+db_skip_final_snapshot     = true
+
+common_tags = {
+  Owner       = "DevOps"
+  Project     = "terraform-aws-infrastructure"
+  ManagedBy   = "Terraform"
+  Environment = "dev"
+}

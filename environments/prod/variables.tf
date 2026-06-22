@@ -1,0 +1,1 @@
+# TODO: Implement variables.tf for prod environment
