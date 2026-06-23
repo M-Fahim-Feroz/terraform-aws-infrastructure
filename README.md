@@ -1,93 +1,106 @@
 # Modular AWS Infrastructure Provisioning with Terraform
 
-## 1. Project Overview
-This repository is a comprehensive portfolio project demonstrating DevOps-focused AWS infrastructure provisioning. It implements modular, reusable Terraform code to deploy a highly available, secure cloud architecture, adhering to enterprise best practices.
+## Project Overview
+This repository contains a portfolio project focused on provisioning AWS infrastructure using Terraform. The goal is to build a modular setup that deploys core networking, compute, and database components using infrastructure as code.
 
-## 2. Architecture Goal
-The target architecture provisions a highly available environment across multiple availability zones:
-- **VPC & Networking:** Public and Private Subnets, Internet Gateway (IGW), NAT Gateways.
-- **Compute:** Scalable EC2 workloads without SSH, managed via Systems Manager (SSM).
-- **Database:** Secure, multi-AZ RDS PostgreSQL with strict micro-segmentation.
-- **Load Balancing:** Application Load Balancer (ALB) for resilient traffic routing.
-- **State Management:** S3 Remote Backend and DynamoDB state locking.
-- **Security & IAM:** Least-privilege IAM roles, Instance Profiles, and strict Security Groups.
-- **Monitoring:** Centralized CloudWatch logging.
+## Architecture Summary
+The architecture is designed to span multiple availability zones for high availability. Traffic enters through an Application Load Balancer in public subnets and is routed to EC2 instances in private subnets. The EC2 instances connect to a private RDS PostgreSQL database. All outbound internet access from the private subnets is routed through NAT Gateways. 
 
-## 3. Tech Stack
-- **Infrastructure as Code:** Terraform
-- **Cloud Provider:** Amazon Web Services (AWS)
-- **CI/CD:** GitHub Actions (Placeholder for Plan & Apply workflows)
-- **Security Scanning:** Checkov
+## Current Implementation Status
+Phase 1: Completed — Bootstrap layer with S3 remote backend and DynamoDB state locking
+Phase 2: Completed — VPC module with public and private subnets across multiple Availability Zones
+Phase 3: Completed — IAM, ALB, and private EC2 instances using a zero-SSH access model
+Phase 4: Completed — Private RDS PostgreSQL module with restricted security group access
+Phase 5: Planned — CloudWatch monitoring, alarms, and logging foundation
+Phase 6: Planned — GitHub Actions CI/CD for Terraform automation
 
-## 4. Current Status
-- ✅ **Phase 1: Bootstrap layer implemented** (Secure S3 backend + DynamoDB locking)
-- ✅ **Phase 2: VPC module implemented** (Highly available networking foundation)
-- ✅ **Phase 3: IAM, ALB, and private EC2 implemented** (Zero-SSH web server architecture)
-- ✅ **Phase 4: Private RDS PostgreSQL module implemented** (Fully secure, private database tier)
-- ⏳ *Phase 5: Pending (CloudWatch module)*
+## AWS Services Used
+- VPC (Virtual Private Cloud)
+- Public and Private Subnets
+- Internet Gateway (IGW)
+- NAT Gateway
+- Application Load Balancer (ALB)
+- EC2 (Elastic Compute Cloud)
+- IAM (Identity and Access Management)
+- RDS PostgreSQL
+- S3 (Simple Storage Service)
+- DynamoDB
 
-## 5. Repository Structure
-- `bootstrap/`: Secures Terraform state remotely with S3 and DynamoDB.
-- `environments/`: Logical separations for infrastructure lifecycle (dev, prod).
-- `modules/`: Standardized, reusable components (VPC, ALB, EC2, IAM, RDS, etc.).
-- `docs/`: Expanded project documentation covering setup, architecture, and security.
-- `.github/workflows/`: CI/CD definitions for automation.
+## Repository Structure
+- `bootstrap/`: Terraform code to create the S3 bucket and DynamoDB table for remote state management.
+- `environments/`: Contains environment-specific configurations (e.g., dev, prod) that call the modules.
+- `modules/`: Reusable Terraform modules for VPC, ALB, EC2, IAM, and RDS components.
+- `docs/`: Additional documentation on setup, architecture, and security.
+- `.github/workflows/`: Placeholders for future CI/CD pipeline definitions.
 
-## 6. Terraform Commands Used
-This project was fully deployed and tested using the standard Terraform workflow:
-- `terraform init` - Initialize the working directory containing Terraform configuration files.
-- `terraform plan` - Create an execution plan, showing what actions Terraform will take.
-- `terraform apply` - Execute the actions proposed in a Terraform plan.
-- `terraform destroy` - Destroy all remote objects managed by a particular Terraform configuration.
+## Terraform Workflow
+The infrastructure was deployed and tested using the standard Terraform command line workflow:
+- `terraform init` to initialize the working directory.
+- `terraform plan` to review proposed infrastructure changes.
+- `terraform apply` to provision the resources in AWS.
+- `terraform destroy` to tear down the environment.
 
-## 7. Best Practices Followed
-- **Modular Design:** Infrastructure split into discrete, manageable components.
-- **State Isolation:** Distinct state files for different environments.
-- **State Protection:** `prevent_destroy` hooks, S3 versioning, and state locking enabled.
-- **Variable Validation:** Strict inputs to prevent configuration drift or empty strings.
-- **Documentation:** Robust guidelines to ensure codebase scalability.
+## Security Notes
+- AWS credentials and secrets are not hardcoded or committed to version control.
+- S3 bucket public access is blocked, and encryption is enabled.
+- EC2 instances are placed in private subnets and do not use SSH keys. Access is managed through AWS Systems Manager (SSM).
+- The RDS database is placed in private subnets and restricted by security groups to only allow traffic from the EC2 instances.
 
-## 8. Security Notes
-- Secrets and credentials are never hardcoded or committed to git.
-- S3 public access is globally blocked, and data is encrypted at rest (AES256).
-- **Zero-SSH:** EC2 instances are entirely private, rely on ALB for inbound traffic, and utilize AWS Systems Manager for secure shell access.
-- **Private Data:** RDS databases reside in private subnets, enforce storage encryption, and accept traffic strictly from the EC2 instance tier.
+## Deployment Proof / Screenshots
+The infrastructure was successfully deployed to AWS and verified.
 
-## 9. Deployment Proof & Screenshots
-The infrastructure was successfully deployed to AWS, verified, and subsequently destroyed to avoid ongoing billing charges. Below is the photographic proof of the deployment:
-
-### Application Load Balancer Entrypoint
+Application Load Balancer Entrypoint:
 ![ALB Browser Page](docs/screenshots/01-alb-browser-page.png)
 
-### EC2 Compute Layer
+EC2 Compute Layer:
 ![EC2 Instance Running](docs/screenshots/02-ec2-instance-running.png)
 ![EC2 Status Checks](docs/screenshots/03-ec2-status-checks.png)
 
-### Load Balancing Health
+Load Balancing Health:
 ![Load Balancer Active](docs/screenshots/04-load-balancer-active.png)
 ![Target Group Healthy](docs/screenshots/05-target-group-healthy.png)
 
-### Database Layer
+Database Layer:
 ![RDS Available](docs/screenshots/06-rds-available.png)
 
-### State Management
+Network Topology:
+![VPC Resource Map](docs/screenshots/07-vpc-resource-map.png)
+
+Terraform Execution:
+![Terraform Output](docs/screenshots/08-terraform-output.png)
+
+State Management:
 ![S3 State Bucket](docs/screenshots/09-s3-state-bucket.png)
 ![DynamoDB Lock Table](docs/screenshots/10-dynamodb-lock-table.png)
 
-### Network Topology
-![VPC Resource Map](docs/screenshots/07-vpc-resource-map.png)
+## Cleanup Note
+All AWS resources shown in the screenshots above (including the NAT Gateway, ALB, EC2 instance, and RDS database) were destroyed immediately after testing using `terraform destroy`. The environment is not currently running to avoid ongoing AWS charges.
 
-### Terraform Execution
-![Terraform Output](docs/screenshots/08-terraform-output.png)
+## Planned Phase 5: CloudWatch Monitoring
+Future work for monitoring may include:
+- CloudWatch Log Group
+- EC2 CPU utilization alarm
+- RDS free storage alarm
+- SNS topic for alert notifications
+- Optional email subscription
+- Possible CloudWatch Agent setup for EC2 logs
 
-## 10. Cleanup Note
-> **Note:** All resources (NAT Gateway, ALB, EC2, RDS, VPC) shown in the screenshots above were fully destroyed via `terraform destroy` immediately after testing to prevent ongoing hourly AWS charges.
+## Planned Phase 6: GitHub Actions CI/CD
+Future work for automation may include:
+- `terraform fmt`
+- `terraform init`
+- `terraform validate`
+- `terraform plan`
+- Checkov security scan
+- Manual approval before `terraform apply`
+- AWS OIDC authentication instead of long-lived IAM access keys
 
-## 11. CI/CD Plan
-Future deployments will be managed entirely through GitHub Actions:
-- **PR Creation:** Triggers `terraform fmt`, `terraform validate`, `terraform plan`, and Checkov security scanning.
-- **Merge to Main:** Requires manual approval to trigger `terraform apply`.
+## Future Improvements
+- Refactoring modules to support more dynamic scaling.
+- Containerizing workloads with ECS or EKS.
 
-## 12. Future Roadmap
-- Phase 5: Configure CloudWatch.
-- Phase 6: Fully activate GitHub Actions CI/CD.
+## What I Learned
+- Managing Terraform state securely with S3 and DynamoDB.
+- Designing a standard VPC topology from scratch.
+- Using IAM Instance Profiles to avoid managing long-lived SSH keys.
+- Applying security groups to restrict traffic strictly between the ALB, EC2, and RDS layers.
