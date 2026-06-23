@@ -59,6 +59,10 @@ resource "aws_instance" "web" {
   tags = merge(var.common_tags, {
     Name = "${var.project_name}-${var.environment}-web-server"
   })
+
+  lifecycle {
+    ignore_changes = [ami]
+  }
 }
 
 # Attach to ALB Target Group
