@@ -1,28 +1,86 @@
-name: Terraform Apply
+name: Terraform Apply (Manual)
 
-# TODO: Activate this workflow when environments are fully implemented.
-# on:
-#   push:
-#     branches: [ "main" ]
+# This workflow requires manual trigger only.
+# It will NOT run automatically on push or pull_request.
+# Use this workflow only after terraform-ci.yml has passed on the target branch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment to apply'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+      confirm:
+        description: 'Type APPLY to confirm you want to run terraform apply'
+        required: true
+        type: string
+
+concurrency:
+  group: terraform-apply-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   apply:
-    name: Terraform Apply
+    name: Terraform Apply (${{ inputs.environment }})
     runs-on: ubuntu-latest
-    # environment: production # Enforces manual approval protection if configured in GitHub
-    
+    timeout-minutes: 45
+    environment: ${{ inputs.environment }}
+    # Require confirmation input to prevent accidental applies
+    if: inputs.confirm == 'APPLY'
+
     steps:
-      # - name: Checkout Code
-      #   uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # - name: Setup Terraform
-      #   uses: hashicorp/setup-terraform@v2
+      - name: Validate confirmation
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.confirm }}" != "APPLY" ]; then
+            echo "::error::Confirmation input must be 'APPLY'. Got: ${{ inputs.confirm }}"
+            exit 1
+          fi
+          echo "Confirmation received. Proceeding with Terraform Apply."
 
-      # - name: Terraform Init
-      #   run: terraform init
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      # - name: Terraform Apply
-      #   run: terraform apply -auto-approve
-      
-      - name: Placeholder
-        run: echo "Terraform Apply workflow placeholder initialized."
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: environments/${{ inputs.environment }}
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: environments/${{ inputs.environment }}
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: environments/${{ inputs.environment }}
+        run: terraform apply -auto-approve tfplan
+
+      - name: Show Outputs
+        working-directory: environments/${{ inputs.environment }}
+        run: terraform output
+
+  prevent-unconfirmed:
+    name: Apply not confirmed
+    runs-on: ubuntu-latest
+    if: inputs.confirm != 'APPLY'
+    steps:
+      - name: Fail with instructions
+        run: |
+          echo "::error::Terraform Apply was not confirmed. To apply, set the 'confirm' input to exactly 'APPLY'."
+          echo "This safety check prevents accidental infrastructure changes."
+          exit 1

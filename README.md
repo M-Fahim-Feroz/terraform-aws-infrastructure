@@ -28,7 +28,7 @@ The infrastructure follows a standard web application layout across multiple Ava
 | Phase 3 | Completed | IAM, ALB, and private EC2 instances using a zero-SSH access model             |
 | Phase 4 | Completed | Private RDS PostgreSQL module with restricted security group access           |
 | Phase 5 | Planned   | CloudWatch monitoring, alarms, and logging foundation                         |
-| Phase 6 | Planned   | GitHub Actions CI/CD for Terraform automation                                 |
+| Phase 6 | Completed | GitHub Actions CI/CD for Terraform automation                                 |
 
 ## What This Project Deploys
 
@@ -237,22 +237,11 @@ Planned monitoring work includes:
 * Optional email subscription
 * Possible CloudWatch Agent setup for EC2 logs
 
-### Phase 6: GitHub Actions CI/CD
 
-Planned CI/CD work includes:
-
-* Terraform formatting check
-* Terraform initialization
-* Terraform validation
-* Terraform plan on pull requests
-* Checkov security scanning
-* Manual approval before Terraform apply
-* AWS OIDC authentication instead of long-lived IAM access keys
 
 ## Known Limitations
 
 * CloudWatch monitoring is not implemented yet.
-* GitHub Actions CI/CD is not active yet.
 * The infrastructure is not currently running.
 * The EC2 layer uses a simple web server setup for validation rather than a full application.
 * The current environment is focused on `dev`; a separate `prod` environment can be added later.
