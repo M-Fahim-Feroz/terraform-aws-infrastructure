@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -82,7 +82,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@v12
@@ -106,7 +106,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Check AWS credentials available
         id: check-creds
