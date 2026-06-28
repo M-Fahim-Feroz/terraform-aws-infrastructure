@@ -1,8 +1,15 @@
 name: Terraform CI (Validate & Plan)
 
+# TODO: For production-grade supply-chain security, pin GitHub Actions to full commit SHAs instead of version tags.
+
 # Runs on pull requests and pushes to main.
 # Validates Terraform formatting, syntax, and optionally runs a plan.
 # Does NOT apply any infrastructure changes.
+#
+# IMPORTANT: This workflow requires the following GitHub Secrets for the plan step:
+# - AWS_ACCESS_KEY_ID
+# - AWS_SECRET_ACCESS_KEY
+# - AWS_REGION
 
 on:
   push:
