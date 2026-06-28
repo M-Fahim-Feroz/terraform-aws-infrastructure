@@ -237,7 +237,24 @@ Planned monitoring work includes:
 * Optional email subscription
 * Possible CloudWatch Agent setup for EC2 logs
 
+### Future Security Improvements
 
+**1. GitHub OIDC Migration**
+To further enhance supply chain security, the CI/CD pipeline should be migrated from static, long-lived AWS IAM Access Keys to GitHub Actions OIDC (OpenID Connect). This would involve:
+- Creating a GitHub Actions OIDC provider in AWS.
+- Provisioning an IAM role with least privilege bound to this repository.
+- Using `aws-actions/configure-aws-credentials` with `role-to-assume`.
+- Removing all long-lived AWS access keys from GitHub Secrets.
+
+**2. GitHub Environments & Required Reviewers**
+The manual apply workflow uses the `terraform-apply` environment. In a production setup, this GitHub Environment should have "Required reviewers" enabled in the repository settings to enforce human approval before Terraform apply runs.
+
+## Release & Changelog
+### Suggested First Release
+- **v1.0.0**: Initial portfolio-ready release.
+  - Includes full CI/CD pipeline, security cleanup, and structured deployment documentation.
+- See `CHANGELOG.md` for a complete history of updates.
+- It is highly recommended to leverage [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases) to bundle version tags cleanly.
 
 ## Known Limitations
 

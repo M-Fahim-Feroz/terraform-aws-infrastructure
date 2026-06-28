@@ -10,6 +10,9 @@ name: Terraform CI (Validate & Plan)
 # - AWS_ACCESS_KEY_ID
 # - AWS_SECRET_ACCESS_KEY
 # - AWS_REGION
+#
+# TODO: Migrate to GitHub Actions OIDC (OpenID Connect) for AWS authentication.
+# This eliminates the need for long-lived IAM user credentials stored as GitHub Secrets.
 
 on:
   push:

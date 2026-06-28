@@ -10,6 +10,9 @@ name: Terraform Apply (Manual)
 # - AWS_ACCESS_KEY_ID
 # - AWS_SECRET_ACCESS_KEY
 # - AWS_REGION
+#
+# TODO: Migrate to GitHub Actions OIDC (OpenID Connect) for AWS authentication.
+# This eliminates the need for long-lived IAM user credentials stored as GitHub Secrets.
 
 on:
   workflow_dispatch:
@@ -38,7 +41,7 @@ jobs:
     name: Terraform Apply (${{ inputs.environment }})
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    environment: ${{ inputs.environment }}
+    environment: terraform-apply
     # Require confirmation input to prevent accidental applies
     if: inputs.confirm == 'APPLY'
 
