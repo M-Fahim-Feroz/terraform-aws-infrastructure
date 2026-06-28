@@ -1,4 +1,4 @@
-# Terraform State Backend
+﻿# Terraform State Backend
 
 ## Overview
 
@@ -50,11 +50,11 @@ DynamoDB provides state locking. When `terraform apply` or `terraform plan` runs
 
 | Feature | Status |
 |---|---|
-| S3 encryption at rest | ✅ Enabled |
-| S3 public access block | ✅ Enabled |
-| S3 versioning | ✅ Enabled |
-| DynamoDB state locking | ✅ Enabled |
-| State file in .gitignore | ✅ Confirmed |
+| S3 encryption at rest |  Enabled |
+| S3 public access block |  Enabled |
+| S3 versioning |  Enabled |
+| DynamoDB state locking |  Enabled |
+| State file in .gitignore |  Confirmed |
 
 ## State Cleanup Warning
 
