@@ -1,5 +1,11 @@
 # AWS Infrastructure Provisioning with Terraform
 
+[![Terraform Plan](https://github.com/M-Fahim-Feroz/terraform-aws-infrastructure/actions/workflows/terraform-plan.yml/badge.svg)](https://github.com/M-Fahim-Feroz/terraform-aws-infrastructure/actions/workflows/terraform-plan.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![AWS](https://img.shields.io/badge/AWS-Cloud-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com)
+[![Terraform](https://img.shields.io/badge/Terraform-1.x-7B42BC?logo=terraform&logoColor=white)](https://terraform.io)
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2671E5?logo=githubactions&logoColor=white)](https://github.com/features/actions)
+
 This repository contains Terraform code for provisioning a modular AWS infrastructure environment.
 
 The project focuses on core DevOps infrastructure concepts such as remote state management, reusable Terraform modules, private networking, load balancing, IAM roles, and private database provisioning.
@@ -18,6 +24,17 @@ The infrastructure follows a standard web application layout across multiple Ava
 * RDS PostgreSQL deployed in private subnets
 * S3 remote backend for Terraform state
 * DynamoDB table for Terraform state locking
+
+> See the [full architecture diagram](docs/architecture.md) with Mermaid flowcharts.
+
+## Project Highlights
+
+- **Fully modular Terraform** — each infrastructure layer (VPC, EC2, ALB, IAM, RDS) is an independent, reusable module with clear input/output contracts
+- **Zero-SSH architecture** — EC2 instances run in private subnets with no public IP or SSH access; all management goes through AWS Systems Manager
+- **Remote state with locking** — Terraform state is stored in S3 with DynamoDB state locking, preventing concurrent applies and state corruption
+- **Protected manual apply** — `terraform apply` requires explicit `workflow_dispatch` with a confirmation input (`APPLY`), preventing accidental infrastructure changes
+- **Multi-AZ high availability** — VPC spans multiple Availability Zones with public/private subnet pairs and a NAT Gateway for secure outbound traffic
+- **Private database tier** — RDS PostgreSQL runs in private subnets with no direct internet access, accessed only from EC2 instances via security groups
 
 ## Current Status
 

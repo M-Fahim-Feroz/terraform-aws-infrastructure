@@ -1,54 +1,64 @@
-# Architecture Overview
+# Architecture — AWS Infrastructure with Terraform
 
-This project simulates a highly available enterprise-grade AWS deployment.
+## Infrastructure Overview
 
-## Current Architecture (Phase 4: Database layer)
-We have successfully deployed the networking foundation, computed resources securely behind a load balancer, and a fully isolated RDS database.
-
-```text
-       [Internet]
-           |
-           v
-    [Internet Gateway]
-           |
-           v
----------------------------------------------------
-|                   VPC                           |
-|                                                 |
-|   [Public Subnet 1]        [Public Subnet 2]    |
-|      (ALB & NAT GW)                             |
-|           |                                     |
-|           |-----------------------------------| |
-|           v                                   | |
-|   [Private Subnet 1]       [Private Subnet 2] | |
-|    (EC2 Web Server)                           | |
-|           |                                   | |
-|           |-----------------------------------| |
-|           v                                   | |
-|   [Private Subnet 1]       [Private Subnet 2] | |
-|    (RDS PostgreSQL)        (RDS PostgreSQL)   | |
----------------------------------------------------
+```mermaid
+flowchart TD
+    Internet([Internet]) --> IGW[Internet Gateway]
+    IGW --> ALB[Application Load Balancer\nPublic Subnets]
+    ALB --> EC2[EC2 Instances\nPrivate Subnets]
+    EC2 --> RDS[(RDS PostgreSQL\nPrivate Subnets)]
+    EC2 --> NAT[NAT Gateway] --> Internet
+    subgraph vpc["VPC — Multi-AZ"]
+        subgraph public["Public Subnets (AZ-a, AZ-b)"]
+            ALB
+            NAT
+        end
+        subgraph private["Private Subnets (AZ-a, AZ-b)"]
+            EC2
+            RDS
+        end
+    end
 ```
 
-## Networking Layer (VPC)
-- Designed with high availability across at least two Availability Zones (AZs).
-- **Public Subnets:** Host the Application Load Balancer and NAT Gateways. Routes `0.0.0.0/0` to the Internet Gateway.
-- **Private Subnets:** Host the internal Compute layer (EC2) and RDS Databases, shielding them from the open internet. Routes `0.0.0.0/0` to the NAT Gateway.
+## CI/CD Pipeline
 
-## Compute Layer (EC2)
-- Deployed in the first private subnet.
-- **Inbound Routing:** Strictly accepts traffic only from the Application Load Balancer (ALB).
-- **Outbound Routing:** Internet access for patching/updates is routed securely through the NAT Gateway.
-- **Access Management:** SSH (Port 22) is fully disabled. Administration is handled via AWS Systems Manager (SSM) Session Manager.
+```mermaid
+flowchart TD
+    Push([git push to main]) --> Plan[GitHub Actions\nterraform-plan.yml]
+    Plan --> Init[terraform init\nS3 Remote Backend]
+    Init --> Validate[terraform validate]
+    Validate --> PlanCmd[terraform plan]
+    PlanCmd --> Done([Plan saved — review output])
+    Manual([workflow_dispatch\n+ type APPLY]) --> Apply[GitHub Actions\nterraform-apply.yml]
+    Apply --> Env[terraform-apply environment\nRequired reviewers]
+    Env --> ApplyCmd[terraform apply -auto-approve]
+```
 
-## Load Balancing Layer (ALB)
-- Public-facing internet entrypoint.
-- Terminates HTTP requests and forwards them to the private Target Group.
+## Terraform Module Structure
 
-## Database Layer (RDS PostgreSQL)
-- **Extreme Isolation:** The RDS instance is deployed inside the Private Subnets. It possesses no public IP, and it cannot be accessed directly from the internet.
-- **Micro-segmentation:** The RDS Security Group strictly accepts inbound traffic on port `5432` only from the EC2 Security Group.
+```mermaid
+flowchart TD
+    Root[root module\nenvironments/dev] --> VPC[module: vpc]
+    Root --> EC2[module: ec2]
+    Root --> ALB[module: alb]
+    Root --> IAM[module: iam]
+    Root --> RDS[module: rds]
+    Root --> Bootstrap[bootstrap module\nS3 + DynamoDB backend]
+    EC2 --> IAM
+    ALB --> VPC
+    EC2 --> VPC
+    RDS --> VPC
+```
 
-## State Management
-- **S3 Bucket:** AES256 encrypted, versioned, public-access blocked.
-- **DynamoDB:** Enables state locking via a `LockID` hash key to prevent race conditions during deployments.
+## Remote State Architecture
+
+```mermaid
+flowchart LR
+    CI[GitHub Actions] --> S3[S3 Bucket\nterraform.tfstate]
+    CI --> DDB[DynamoDB Table\nstate lock]
+    S3 --> Versioning[S3 Versioning\nenabled]
+    S3 --> Encryption[AES-256\nencryption at rest]
+```
+
+[← README](../README.md)
